@@ -1,0 +1,11 @@
+# Dependencies
+node_modules/
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Temp
+.icon_b64.txt

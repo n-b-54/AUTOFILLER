@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font: 11px/1.4 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color: var(--figma-color-text, #333);
+        background: var(--figma-color-bg, #fff);
+        padding: 12px;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .header img {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+      }
+
+      .header h1 {
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      .label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--figma-color-text-secondary, #666);
+        font-weight: 500;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        padding: 2px;
+        border-radius: 6px;
+        background: var(--figma-color-bg-secondary, #f5f5f5);
+      }
+
+      .segmented button {
+        border: none;
+        border-radius: 4px;
+        padding: 7px 8px;
+        background: transparent;
+        color: var(--figma-color-text, #333);
+        font: inherit;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .segmented button.active {
+        background: var(--figma-color-bg, #fff);
+        box-shadow: 0 0 0 1px var(--figma-color-border, #e5e5e5);
+      }
+
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .check input {
+        accent-color: #0d9b8a;
+      }
+
+      .status {
+        min-height: 28px;
+        margin-bottom: 10px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: var(--figma-color-bg-secondary, #f5f5f5);
+        color: var(--figma-color-text-secondary, #666);
+      }
+
+      .status.ok {
+        color: #0d6e63;
+        background: #e8f7f4;
+      }
+
+      .status.warn {
+        color: #8a6d00;
+        background: #fff8e0;
+      }
+
+      .actions {
+        display: grid;
+        gap: 6px;
+      }
+
+      .primary {
+        width: 100%;
+        border: none;
+        border-radius: 6px;
+        padding: 9px 12px;
+        background: #0d9b8a;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .primary:hover {
+        background: #0b8577;
+      }
+
+      .primary:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+
+      .hint {
+        margin-top: 10px;
+        color: var(--figma-color-text-tertiary, #999);
+        font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABPklEQVR4AdySwXGDMBRENanAHQBF5Mzn6lOacB2IOlxEcvIVOKcIoIK4g+Q/Mh6DhMxorJM9rJHQ211L+M38f456+1T9qH6fFBlkkWkoYGA19EN1UD17kUEWmUcKTpr4rkp9kXmiQFInL/KEAra0eJZ0eKAgaaIb9uIF1lojIu6uV3OY1QNnEjyitm1NXdcOvp5SDgO7XrnPNgswYG6axnRdd6edEWswImLwOMvz1CvAhGEcR1OW5WzEHBIMrGjJMAxz6PLLK8iybLkeNZ6myeO9gqIoDLvI89z0fW+qqnooGFg8IrJfAEEoBl7glgkGsQYDi4dnrrwd3AAMzc5LhoWBZbylYAGwtZZbUPzyPeZhQTA5YuE1Cq4RO45FrxxRF+uK4DsKzmr4VqW+yDxTcNFk/o9fek9xXGSQReblDwAA///v8HPkAAAABklEQVQDAOEPhvF0nvdJAAAAAElFTkSuQmCC" alt="" width="20" height="20" />
+      <h1>AUTOFILLER</h1>
+    </div>
+
+    <div class="field">
+      <span class="label">Set fixed axes to</span>
+      <div class="segmented" id="mode">
+        <button type="button" data-mode="FILL" class="active">Fill</button>
+        <button type="button" data-mode="HUG">Hug</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="check">
+        <input type="checkbox" id="recursive" checked />
+        Include all descendants
+      </label>
+    </div>
+
+    <div class="status" id="status">Select a frame to get started</div>
+
+    <div class="actions">
+      <button class="primary" id="apply" disabled>Apply</button>
+    </div>
+
+    <p class="hint">
+      Only Fixed → Fill/Hug. Parent must use auto layout. Panel stays open.
+    </p>
+
+    <script>
+      let mode = "FILL";
+      let hasSelection = false;
+
+      const statusEl = document.getElementById("status");
+      const applyBtn = document.getElementById("apply");
+      const recursiveEl = document.getElementById("recursive");
+
+      document.querySelectorAll("#mode button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          mode = btn.dataset.mode;
+          document.querySelectorAll("#mode button").forEach((b) => {
+            b.classList.toggle("active", b === btn);
+          });
+        });
+      });
+
+      applyBtn.addEventListener("click", () => {
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "apply",
+              mode,
+              recursive: recursiveEl.checked,
+            },
+          },
+          "*"
+        );
+      });
+
+      onmessage = (event) => {
+        const msg = event.data.pluginMessage;
+        if (!msg) return;
+
+        if (msg.type === "selection") {
+          hasSelection = msg.count > 0;
+          applyBtn.disabled = !hasSelection;
+          statusEl.className = "status";
+          if (!hasSelection) {
+            statusEl.textContent = "Select a frame to get started";
+          } else {
+            statusEl.textContent =
+              msg.count === 1
+                ? `Selected: ${msg.name}`
+                : `Selected: ${msg.count} layers`;
+          }
+        }
+
+        if (msg.type === "result") {
+          statusEl.className = msg.changed > 0 ? "status ok" : "status warn";
+          statusEl.textContent = msg.message;
+        }
+      };
+
+      parent.postMessage({ pluginMessage: { type: "ready" } }, "*");
+    </script>
+  </body>
+</html>
