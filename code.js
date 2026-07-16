@@ -38,12 +38,12 @@ function applySizing(node, mode, counters) {
     }
     try {
         let didChange = false;
-        if (node.layoutSizingHorizontal === "FIXED") {
+        if (node.layoutSizingHorizontal !== mode) {
             node.layoutSizingHorizontal = mode;
             counters.changed++;
             didChange = true;
         }
-        if (node.layoutSizingVertical === "FIXED") {
+        if (node.layoutSizingVertical !== mode) {
             node.layoutSizingVertical = mode;
             counters.changed++;
             didChange = true;
